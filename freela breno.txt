@@ -1,0 +1,51 @@
+Minha qualificação está para junho.
+
+Eu estou escrevendo, bem no início, então ainda consigo progredir independentemente dos números, mas planejo dar uma acelerada entre
+ dezembro e janeiro, que é quando, creio, precisarei de alguns dados.
+
+https://legis.senado.leg.br/dadosabertos/docs/resource_ListaSenadorService.html#resource_ListaSenadorService_filiacoesSenadorXml_codigo_versao_GET
+
+o para controle e colocar abaixo o que estou planejando.
+
+Os dados podem ser extraídos por meio de repositório disponível em https://legis.senado.leg.br/dadosabertos/docs/resource_ListaSenadorService.html
+
+OBS: Em todos os pontos, eu desejo que seja feita a análise global (46ª à 56ª legislatura e legislaturas isoladamente), seguidas de gráficos. 
+
+
+1)	Análise 1: Paralelo de proporção entre mulheres e homens total.
+
+ Medição de crescimento do número de homens e mulheres (eleitos e suplentes) da 46 à 56ª legislatura
+ Medição de crescimento do número de homens e mulheres eleitos da 46 à 56ª legislatura 
+        
+       
+2)	Análise 2: PLS e EC.
+
+AUTORIAS INDIVIDUAIS PLS E EC EM NÚMEROS ABSOLUTOS
+AUTORIAS INDIVIDUAIS PLS E EC % COMPARATIVAMENTE
+
+PL E EC REJEITADAS NO SF EM NÚMEROS ABSOLUTOS
+PL E EC REJEITADAS NO SF % COMPARATIVAMENTE
+
+PL E EC APROVADOS NO SF  EM NÚMEROS ABSOLUTOS
+PL E EC APROVADAS  O SF  % COMPARATIVAMENTE
+
+PL E EC ARQUIVADAS EM NÚMEROS ABSOLUTOS	
+PL E EC ARQUIVADAS COMPARATIVAMENTE
+
+PL E EC APROVADAS NAS DUAS CASAS E ENCAMINHADAS  À SANÇÃO EM NÚMEROS ABSOLUTOS
+PL E EC APROVADAS NAS DUAS CASAS E ENCAMINHADAS  À SANÇÃO  % COMPARATIVAMENTE
+
+3)	Análise 3: Relatorias.
+
+RELATORIAS INDIVIDUAIS EM NÚMEROS ABSOLUTOS
+RELATORIAS INDIVIDUAIS % COMPARATIVAMENTE
+
+
+
+4)	Análise 4 – interrupções.
+
+Aqui, eu não sei se é possível medir as interrupções. No webservice, vi que disponibilizam
+discursos, apartes e outros tipos de uso da palavra.  O contraste comparativo e absoluto desse tipo de dados também seria interessante.
+
+Aguardo o retorno,então!
+Obrigada!
