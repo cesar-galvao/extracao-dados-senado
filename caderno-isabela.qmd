@@ -1,0 +1,212 @@
+---
+title: "Análise parlamentares"
+subtitle: "Cliente: Isabela (...)" 
+format: 
+  pdf:
+    toc: true
+    toc-depth: 2
+    keep-tex: true
+    include-in-header:
+      text: |
+        \usepackage[auth-lg]{authblk}
+execute:
+  echo: false
+  message: false
+  warning: false
+params:
+  format: "latex"
+---
+
+{{< pagebreak >}}
+
+# Descrição geral 
+
+Dados disponíveis via API: 
+<https://legis.senado.leg.br/dadosabertos/docs/resource_ListaSenadorService.html>
+
+Em todos os pontos, fazer a análise global (46ª à 56ª legislatura e legislaturas isoladamente), seguidas de gráficos. 
+
+```{r}
+#| label: setup
+pacman::p_load(tidyverse)
+source("funcoes.R")
+```
+
+#	Análise 1: Paralelo de proporção entre mulheres e homens total
+
+Número de homens e mulheres (eleitos e suplentes) da 46 à 56ª legislatura.
+ 
+```{r}
+#| label: filtragem-mandatos
+
+mandatos_tit <- readRDS("tabelas/mandatos_df.rds") %>%
+  select(uf, NumeroLegislatura, DescricaoParticipacao, CodigoParlamentar,
+         NomeParlamentar)
+
+mandatos_sup <- readRDS("tabelas/mandatos_df.rds") %>%
+  select(uf,NumeroLegislatura,
+         participacao_suplente, cod_parlamentar_suplente,
+         nome_suplente)
+
+names(mandatos_tit) <- names(mandatos_sup) <- c("uf", "legislatura", "participacao", "codparlamentar", "nome")
+
+mandatos <- bind_rows(mandatos_tit, mandatos_sup) %>%
+  arrange(uf, legislatura) %>%
+  mutate(legislatura = as.integer(legislatura)) %>%
+  filter(!is.na(nome) & legislatura <= 56L)
+
+rm(mandatos_tit, mandatos_sup)
+```
+ 
+Filtrando para casos em que o nome não é `NA`, perde-se 1309 observações. Saimos de 4094 para 2785 casos. Após a filtragem, a legislatura mais antiga que se tem é a 48 e a mais recente é a 56.
+
+```{r}
+#| label: associacao-mandatos-sexo
+
+parlamentares <- readRDS("tabelas/parlamentares.rds") %>%
+  select(codigo, nome, sexo)
+
+mandatos_sexo <- inner_join(mandatos, parlamentares, by = c("codparlamentar" = "codigo"),
+           suffix = c("_simples", "_completo"))
+```
+
+```{r}
+#| label: tabela-sexo-legislaturas
+#| tbl-cap: Tabela com totais e proporções de sexos entre legislaturas 48 e 56.
+#| tbl-cap-location: bottom
+
+# criacao da tabela com sexos
+tabela_sexo_geral <- mandatos_sexo %>%
+  group_by(legislatura, sexo) %>%
+  summarise(n = n()) %>%
+  pivot_wider(
+    id_cols = legislatura,
+    names_from = sexo,
+    values_from = n) %>%
+  ungroup() %>%
+  mutate(Feminino = if_else(is.na(Feminino), 0, Feminino),
+         prop_fem = Feminino/Masculino,
+         prop_masc = 1-prop_fem)
+
+tabela_sexo_geral %>%
+  mutate(across(starts_with("prop"), ~ as_percent(.x))) %>%
+  knitr::kable(
+    format = params$format, #altera de acordo com o tipo de output
+    align = c("c"),
+    booktabs = TRUE,
+    longtable = TRUE,
+    linesep = "",
+    # escape = FALSE,
+    digits = 3,
+    col.names = c("Legislatura","T. Masc.", "T. Fem." , "Prop. Masc.", "Prop. Fem.")
+    )
+# %>%
+#   kableExtra::kable_styling(
+#       position = "center"#,
+#       #latex_options = c("striped", "repeat_header")#,
+#       #stripe_color = "gray!15"
+#       )
+```
+
+Observamos a presença feminina nas séries temporais a seguir:
+ 
+```{r}
+#| label: plot-totais-parlamentares
+#| out-width: "75%"
+#| fig-cap: |
+#|   Série temporal de totais de parlamentares agrupados por sexo.
+
+tabela_sexo_geral %>%
+  select(legislatura:Feminino)%>%
+  pivot_longer(cols = Masculino:Feminino, names_to = "sexo",
+                values_to = "total") %>%
+  ggplot(aes(legislatura, total, group = sexo, color = sexo))+
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 410))+
+  geom_point()+
+  geom_line()+
+  labs(x = "Legislaturas", y = "Total", color = "Sexo")+
+  theme_bw()+ 
+  theme(legend.background = element_blank())+
+  scale_color_manual(values = c("red", "blue"))
+```
+
+```{r}
+#| label: plot-percentuais-parlamentares
+#| out-width: "75%"
+#| fig-cap: |
+#|   Série temporal de percentual do total de parlamentares agrupados por sexo.
+
+tabela_sexo_geral %>%
+  select(legislatura, prop_fem, prop_masc)%>%
+  pivot_longer(cols = c(prop_fem, prop_masc), names_to = "sexo",
+                values_to = "prop") %>%
+  ggplot(aes(legislatura, prop, group = sexo, color = sexo))+
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 1.05))+
+  geom_point()+
+  geom_line()+
+  labs(x = "Legislaturas", y = "Proporção", color = "Sexo")+
+  theme_bw()+ 
+  theme(legend.background = element_blank())+
+  scale_color_manual(values = c("red", "blue"))
+```
+
+```{r}
+#| label: plot-percentuais-parlamentares-alt
+#| out-width: "75%"
+#| fig-cap: |
+#|   Série temporal de percentual do total de parlamentares agrupados por sexo. Visualização alternativa
+
+tabela_sexo_geral %>%
+  select(legislatura, prop_fem, prop_masc)%>%
+  pivot_longer(cols = c(prop_fem, prop_masc), names_to = "sexo",
+                values_to = "prop") %>%
+  ggplot(aes(as.factor(legislatura), prop, group = sexo, fill = sexo))+
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 1))+
+  geom_bar(stat = "identity", position = "stack") +
+  labs(x = "Legislaturas", y = "Proporção", fill = "Sexo")+
+  theme_bw()+ 
+  theme(legend.background = element_blank())+
+  scale_fill_manual(values = c("red", "blue"))
+```
+    
+      
+{{< pagebreak >}}    
+  
+         
+#	Análise 2: PLS e EC
+
+AUTORIAS INDIVIDUAIS PLS E EC EM NÚMEROS ABSOLUTOS
+AUTORIAS INDIVIDUAIS PLS E EC % COMPARATIVAMENTE
+
+PL E EC REJEITADAS NO SF EM NÚMEROS ABSOLUTOS
+PL E EC REJEITADAS NO SF % COMPARATIVAMENTE
+
+PL E EC APROVADOS NO SF  EM NÚMEROS ABSOLUTOS
+PL E EC APROVADAS  O SF  % COMPARATIVAMENTE
+
+PL E EC ARQUIVADAS EM NÚMEROS ABSOLUTOS	
+PL E EC ARQUIVADAS COMPARATIVAMENTE
+
+PL E EC APROVADAS NAS DUAS CASAS E ENCAMINHADAS  À SANÇÃO EM NÚMEROS ABSOLUTOS
+PL E EC APROVADAS NAS DUAS CASAS E ENCAMINHADAS  À SANÇÃO  % COMPARATIVAMENTE
+
+{{< pagebreak >}}
+
+#	Análise 3: Relatorias
+
+RELATORIAS INDIVIDUAIS EM NÚMEROS ABSOLUTOS
+RELATORIAS INDIVIDUAIS % COMPARATIVAMENTE
+
+{{< pagebreak >}}
+
+#	Análise 4 – interrupções
+
+Aqui, eu não sei se é possível medir as interrupções. No webservice, vi que disponibilizam
+discursos, apartes e outros tipos de uso da palavra.  O contraste comparativo e absoluto desse tipo de dados também seria interessante.
+
+```{r}
+#| label: cleanup
+
+rm(list = ls())
+```
+
