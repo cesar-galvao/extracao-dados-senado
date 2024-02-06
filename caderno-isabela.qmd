@@ -13,8 +13,6 @@ execute:
   echo: false
   message: false
   warning: false
-params:
-  format: "latex"
 ---
 
 {{< pagebreak >}}
@@ -91,7 +89,7 @@ tabela_sexo_geral <- mandatos_sexo %>%
 tabela_sexo_geral %>%
   mutate(across(starts_with("prop"), ~ as_percent(.x))) %>%
   knitr::kable(
-    format = params$format, #altera de acordo com o tipo de output
+    format = "latex", #altera de acordo com o tipo de output
     align = c("c"),
     booktabs = TRUE,
     longtable = TRUE,
